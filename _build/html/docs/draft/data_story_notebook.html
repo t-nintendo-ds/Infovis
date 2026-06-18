@@ -649,6 +649,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
+<span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;iframe&quot;</span>
 
 <span class="c1"># Colour palette - IBM colour-blind safe</span>
 <span class="n">COL_LCC</span>    <span class="o">=</span> <span class="s1">&#39;#648FFF&#39;</span>  <span class="c1"># Blue</span>
@@ -945,7 +947,15 @@ Annual European CO2 totals:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Passengers: 2008 = 0.71B  to  2019 = 1.04B  (+46%)
+<div class="output text_html"><iframe
+    scrolling="no"
+    width="100%"
+    height="480"
+    src="iframe_figures/figure_4.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+</div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Passengers: 2008 = 0.71B  to  2019 = 1.04B  (+46%)
 Flights:    2008 = 9.45M  to  2019 = 10.19M  (+8%)
 </pre></div>
 </div>
@@ -1055,7 +1065,15 @@ Flights:    2008 = 9.45M  to  2019 = 10.19M  (+8%)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LCC-focused total:  2004 = 79M  to  2019 = 147M  (+85%)
+<div class="output text_html"><iframe
+    scrolling="no"
+    width="100%"
+    height="600"
+    src="iframe_figures/figure_5.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+</div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LCC-focused total:  2004 = 79M  to  2019 = 147M  (+85%)
 Traditional total:  2004 = 370M  to  2019 = 561M  (+52%)
 </pre></div>
 </div>
@@ -1206,7 +1224,15 @@ Traditional total:  2004 = 370M  to  2019 = 561M  (+52%)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Top 8 fastest-growing countries by 2019 (index, 2004=100):
+<div class="output text_html"><iframe
+    scrolling="no"
+    width="100%"
+    height="590"
+    src="iframe_figures/figure_6.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+</div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Top 8 fastest-growing countries by 2019 (index, 2004=100):
 country_name  growth_index
       Poland    770.902710
       Latvia    735.396467
@@ -1326,7 +1352,15 @@ country_name  growth_index
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2019: passenger index = 138.4,  CO2 index = 126.2
+<div class="output text_html"><iframe
+    scrolling="no"
+    width="100%"
+    height="490"
+    src="iframe_figures/figure_7.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+</div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2019: passenger index = 138.4,  CO2 index = 126.2
 CO2 in actual numbers: 2013 = 167.0Mt  to  2019 = 210.7Mt  (+26%)
 CO2 in 2025: 220.1Mt  (+32% vs 2013)
 </pre></div>
@@ -1425,7 +1459,15 @@ CO2 in 2025: 220.1Mt  (+32% vs 2013)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CO2 per flight: 2010 = 19.3t,  2019 = 22.0t,  2025 = 22.8t
+<div class="output text_html"><iframe
+    scrolling="no"
+    width="100%"
+    height="620"
+    src="iframe_figures/figure_8.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+</div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CO2 per flight: 2010 = 19.3t,  2019 = 22.0t,  2025 = 22.8t
 Change 2010 to 2019: +13.6% (an increase, not a reduction)
 </pre></div>
 </div>
@@ -1555,7 +1597,15 @@ Change 2010 to 2019: +13.6% (an increase, not a reduction)
 </div>
 </div>
 <div class="cell_output docutils container">
-</div>
+<div class="output text_html"><iframe
+    scrolling="no"
+    width="100%"
+    height="540"
+    src="iframe_figures/figure_9.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+</div></div>
 </div>
 <p><strong>Figure 6 - LCC Airport Share vs Passenger Growth by Country, 2004-2019.</strong> The chart shows a general pattern: countries with a higher share of their classified airport traffic at LCC-focused airports tended to have stronger overall passenger growth. Ireland, Belgium, and Italy, all with major Ryanair bases, sit towards the upper right of the chart. The Central and Eastern European countries (pink) cluster near the top regardless of where they fall on the LCC share axis, which reflects their broader catch-up story: these markets were growing fast in absolute terms because they started from such a low base of aviation access.</p>
 <p>No country with a high share of LCC airport traffic grew below the average. Countries where cheap airlines were most structurally present grew the most, and since CO2 tracked passengers almost exactly across the whole period, these are also the countries that contributed the most to European aviation’s rising emissions total.</p>
