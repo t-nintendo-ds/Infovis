@@ -4,6 +4,4 @@
 format: jb-book
 root: docs/home
 chapters:
-- file: docs/notebook
-- file: docs/test
 - file: docs/draft/data_story_notebook
