@@ -8,7 +8,10 @@ author: Group 1A # Change this to your name (or your team/organization name).
 # See https://jupyterbook.org/content/execute.html
 execute:
   execute_notebooks: force
-
+  
+parse:
+  myst_enable_extensions:
+    - colon_fence
 # Define the name of the latex output file for PDF builds
 latex:
   latex_documents:
