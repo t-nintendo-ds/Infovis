@@ -1,0 +1,196 @@
+Traceback (most recent call last):
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\site-packages\jupyter_cache\executors\utils.py", line 58, in single_nb_execution
+    executenb(
+    ~~~~~~~~~^
+        nb,
+        ^^^
+    ...<4 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\site-packages\nbclient\client.py", line 1323, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\site-packages\jupyter_core\utils\__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\site-packages\nbclient\client.py", line 709, in async_execute
+    await self.async_execute_cell(
+        cell, index, execution_count=self.code_cells_executed + 1
+    )
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\site-packages\nbclient\client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "C:\Users\timds\anaconda3\envs\jupyterbook3\Lib\site-packages\nbclient\client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+# Visualisation 6 - Country LCC Airport Share vs Passenger Growth
+
+lcc_pax_cty = (
+    df_paoa[
+        (df_paoa['airport_type'] == 'LCC-focused') &
+        (df_paoa['TIME_PERIOD'] == 2019)
+    ]
+    .groupby('country_code')['passengers'].sum().reset_index()
+    .rename(columns={'passengers': 'lcc_pax'})
+)
+trd_pax_cty = (
+    df_paoa[
+        (df_paoa['airport_type'] == 'Traditional') &
+        (df_paoa['TIME_PERIOD'] == 2019)
+    ]
+    .groupby('country_code')['passengers'].sum().reset_index()
+    .rename(columns={'passengers': 'trd_pax'})
+)
+lcc_share = lcc_pax_cty.merge(trd_pax_cty, on='country_code', how='outer').fillna(0)
+lcc_share['classified_total'] = lcc_share['lcc_pax'] + lcc_share['trd_pax']
+lcc_share['lcc_share_pct'] = np.where(
+    lcc_share['classified_total'] > 0,
+    lcc_share['lcc_pax'] / lcc_share['classified_total'] * 100,
+    np.nan
+)
+lcc_share.dropna(subset=['lcc_share_pct'], inplace=True)
+
+growth_19 = country_data[country_data['year'] == 2019][
+    ['country_code', 'country_name', 'passengers', 'growth_index']
+]
+scatter_df = lcc_share.merge(growth_19, on='country_code', how='inner')
+scatter_df = scatter_df[scatter_df['classified_total'] > 1e6]
+
+western  = {'IE', 'UK', 'FR', 'BE', 'NL', 'DE', 'AT', 'CH', 'LU'}
+northern = {'SE', 'NO', 'FI', 'DK', 'IS', 'EE', 'LV', 'LT'}
+southern = {'ES', 'PT', 'IT', 'EL', 'CY', 'MT'}
+eastern  = {'PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'HR', 'SI', 'RS', 'ME', 'MK', 'BA', 'TR'}
+
+def get_region(c):
+    if c in western:  return 'Western Europe'
+    if c in northern: return 'Northern Europe'
+    if c in southern: return 'Southern Europe'
+    if c in eastern:  return 'Central and Eastern Europe'
+    return 'Other'
+
+scatter_df['region'] = scatter_df['country_code'].apply(get_region)
+
+region_colors = {
+    'Western Europe':            COL_LCC,
+    'Northern Europe':           COL_EFF,
+    'Southern Europe':           COL_TRAD,
+    'Central and Eastern Europe': COL_CO2,
+    'Other':                     COL_GREY
+}
+
+fig6 = px.scatter(
+    scatter_df,
+    x='lcc_share_pct',
+    y='growth_index',
+    size='passengers',
+    color='region',
+    color_discrete_map=region_colors,
+    hover_name='country_name',
+    hover_data={
+        'lcc_share_pct': ':.1f',
+        'growth_index':  ':.0f',
+        'passengers':    ':,.0f',
+        'region':        True
+    },
+    labels={
+        'lcc_share_pct': 'LCC-focused airport share of classified traffic (%, 2019)',
+        'growth_index':  'Passenger growth (index, 2004 = 100)',
+        'region':        'Region',
+        'passengers':    'Total passengers 2019'
+    },
+    size_max=48
+)
+
+from numpy.polynomial.polynomial import polyfit as npfit
+xv = scatter_df['lcc_share_pct'].values
+yv = scatter_df['growth_index'].values
+c_fit = npfit(xv, yv, 1)
+xl = np.linspace(xv.min(), xv.max(), 100)
+yl = c_fit[0] + c_fit[1] * xl
+fig6.add_trace(go.Scatter(
+    x=xl, y=yl,
+    mode='lines',
+    line=dict(color='#999999', dash='dash', width=1.5),
+    name='Trend line',
+    hoverinfo='skip'
+))
+fig6.add_hline(y=100, line_dash='dot', line_color='#cccccc', line_width=1)
+
+fig6.update_layout(
+    title=dict(
+        text=(
+            '<b>LCC Airport Share vs Passenger Growth by Country, 2004-2019</b><br>'
+            '<sup>Bubble size = total passengers in 2019. '
+            'LCC share is based on the classified airports only (see Dataset section). '
+            'Source: Eurostat avia_paoc, avia_paoa.</sup>'
+        ),
+        font=dict(size=15)
+    ),
+    height=520,
+    plot_bgcolor='white',
+    paper_bgcolor='white',
+    legend=dict(title='Region')
+)
+fig6.update_xaxes(showgrid=True, gridcolor=COL_GRID)
+fig6.update_yaxes(showgrid=True, gridcolor=COL_GRID)
+fig6.show()
+
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mKeyError[39m                                  Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[9][39m[32m, line 56[39m
+[32m     52[39m     [33m'Central and Eastern Europe'[39m: COL_CO2,
+[32m     53[39m     [33m'Other'[39m:                     COL_GREY
+[32m     54[39m }
+[32m     55[39m 
+[32m---> [39m[32m56[39m fig6 = px.scatter(
+[32m     57[39m     scatter_df,
+[32m     58[39m     x=[33m'lcc_share_pct'[39m,
+[32m     59[39m     y=[33m'growth_index'[39m,
+
+[36mFile [39m[32m~\anaconda3\envs\jupyterbook3\Lib\site-packages\plotly\express\_chart_types.py:66[39m, in [36mscatter[39m[34m(data_frame, x, y, color, symbol, size, hover_name, hover_data, custom_data, text, facet_row, facet_col, facet_col_wrap, facet_row_spacing, facet_col_spacing, error_x, error_x_minus, error_y, error_y_minus, animation_frame, animation_group, category_orders, labels, orientation, color_discrete_sequence, color_discrete_map, color_continuous_scale, range_color, color_continuous_midpoint, symbol_sequence, symbol_map, opacity, size_max, marginal_x, marginal_y, trendline, trendline_options, trendline_color_override, trendline_scope, log_x, log_y, range_x, range_y, render_mode, title, template, width, height)[39m
+[32m     12[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mscatter[39m(
+[32m     13[39m     data_frame=[38;5;28;01mNone[39;00m,
+[32m     14[39m     x=[38;5;28;01mNone[39;00m,
+[32m   (...)[39m[32m     60[39m     height=[38;5;28;01mNone[39;00m,
+[32m     61[39m ) -> go.Figure:
+[32m     62[39m [38;5;250m    [39m[33;03m"""[39;00m
+[32m     63[39m [33;03m    In a scatter plot, each row of `data_frame` is represented by a symbol[39;00m
+[32m     64[39m [33;03m    mark in 2D space.[39;00m
+[32m     65[39m [33;03m    """[39;00m
+[32m---> [39m[32m66[39m     [38;5;28;01mreturn[39;00m [30;43mmake_figure[39;49m[30;43m([39;49m[30;43margs[39;49m[30;43m=[39;49m[30;43mlocals[39;49m[30;43m([39;49m[30;43m)[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mconstructor[39;49m[30;43m=[39;49m[30;43mgo[39;49m[30;43m.[39;49m[30;43mScatter[39;49m[30;43m)[39;49m
+
+[36mFile [39m[32m~\anaconda3\envs\jupyterbook3\Lib\site-packages\plotly\express\_core.py:2089[39m, in [36mmake_figure[39m[34m(args, constructor, trace_patch, layout_patch)[39m
+[32m   2085[39m trace_specs, grouped_mappings, sizeref, show_colorbar = infer_config(
+[32m   2086[39m     args, constructor, trace_patch, layout_patch
+[32m   2087[39m )
+[32m   2088[39m grouper = [x.grouper [38;5;129;01mor[39;00m one_group [38;5;28;01mfor[39;00m x [38;5;129;01min[39;00m grouped_mappings] [38;5;129;01mor[39;00m [one_group]
+[32m-> [39m[32m2089[39m groups, orders = [30;43mget_groups_and_orders[39;49m[30;43m([39;49m[30;43margs[39;49m[30;43m,[39;49m[30;43m [39;49m[30;43mgrouper[39;49m[30;43m)[39;49m
+[32m   2091[39m col_labels = []
+[32m   2092[39m row_labels = []
+
+[36mFile [39m[32m~\anaconda3\envs\jupyterbook3\Lib\site-packages\plotly\express\_core.py:2065[39m, in [36mget_groups_and_orders[39m[34m(args, grouper)[39m
+[32m   2061[39m                 g.insert(i, [33m"[39m[33m"[39m)
+[32m   2062[39m     full_sorted_group_names = [[38;5;28mtuple[39m(g) [38;5;28;01mfor[39;00m g [38;5;129;01min[39;00m full_sorted_group_names]
+[32m   2064[39m     groups = {
+[32m-> [39m[32m2065[39m         sf: [30;43mgrouped[39;49m[30;43m.[39;49m[30;43mget_group[39;49m[30;43m([39;49m[30;43ms[39;49m[30;43m [39;49m[30;43;01mif[39;49;00m[30;43m [39;49m[30;43mlen[39;49m[30;43m([39;49m[30;43ms[39;49m[30;43m)[39;49m[30;43m [39;49m[30;43m>[39;49m[30;43m [39;49m[30;43m1[39;49m[30;43m [39;49m[30;43;01melse[39;49;00m[30;43m [39;49m[30;43ms[39;49m[30;43m[[39;49m[30;43m0[39;49m[30;43m][39;49m[30;43m)[39;49m
+[32m   2066[39m         [38;5;28;01mfor[39;00m sf, s [38;5;129;01min[39;00m [38;5;28mzip[39m(full_sorted_group_names, sorted_group_names)
+[32m   2067[39m     }
+[32m   2068[39m [38;5;28;01mreturn[39;00m groups, orders
+
+[36mFile [39m[32m~\anaconda3\envs\jupyterbook3\Lib\site-packages\pandas\core\groupby\groupby.py:885[39m, in [36mBaseGroupBy.get_group[39m[34m(self, name)[39m
+[32m    883[39m         name = name[[32m0[39m]
+[32m    884[39m     [38;5;28;01melse[39;00m:
+[32m--> [39m[32m885[39m         [38;5;28;01mraise[39;00m [38;5;167;01mKeyError[39;00m(name)
+[32m    887[39m inds = [38;5;28mself[39m._get_index(name)
+[32m    888[39m [38;5;28;01mif[39;00m [38;5;129;01mnot[39;00m [38;5;28mlen[39m(inds):
+
+[31mKeyError[39m: 'Western Europe'
+
